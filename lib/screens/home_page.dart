@@ -62,7 +62,8 @@ class _HomePageState extends State<HomePage> {
 
       Position currentPosition = await Geolocator.getCurrentPosition();
       setState(() {
-        location = 'Lat: ${currentPosition.latitude}, Long: ${currentPosition.longitude}';
+        location =
+            'Lat: ${currentPosition.latitude}, Long: ${currentPosition.longitude}';
       });
     } catch (e) {
       setState(() {

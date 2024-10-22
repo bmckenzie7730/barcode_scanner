@@ -20,22 +20,18 @@ class BarcodeScannerButton extends StatelessWidget {
                   backgroundColor: Colors.transparent,
                   foregroundColor: Colors.white,
                   elevation: 0,
+                  // Removed the IconButton that controls the torch
                   actions: [
-                    IconButton(
-                      icon: controller.torchEnabled
-                          ? const Icon(Icons.flashlight_off_rounded)
-                          : const Icon(Icons.flashlight_on_rounded),
-                      onPressed: controller.toggleTorch,
-                    ),
+                    // No torch button added here
                   ],
                 );
               },
               controller: MobileScannerController(
                 detectionSpeed: DetectionSpeed.noDuplicates,
               ),
-              onDetect: (BarcodeCapture capture) async {
+              onDetect: (BarcodeCapture capture) {
                 final String? scannedValue = capture.barcodes.first.rawValue;
-                if (scannedValue != null && context.mounted) {
+                if (scannedValue != null) {
                   Navigator.of(context).pop(scannedValue);
                 }
               },
@@ -44,7 +40,7 @@ class BarcodeScannerButton extends StatelessWidget {
         );
 
         if (result != null) {
-          onScan(result);
+          onScan(result); // Call the callback with the scanned value
         }
       },
       child: const Text('Scan Barcode'),
