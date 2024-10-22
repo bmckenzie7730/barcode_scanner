@@ -36,9 +36,11 @@ class _HomePageState extends State<HomePage> {
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        setState(() {
-          location = 'Location services are disabled. Please enable them.';
-        });
+        if (mounted) {
+          setState(() {
+            location = 'Location services are disabled. Please enable them.';
+          });
+        }
         return;
       }
 
@@ -46,29 +48,36 @@ class _HomePageState extends State<HomePage> {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          setState(() {
-            location = 'Location permissions are denied.';
-          });
+          if (mounted) {
+            setState(() {
+              location = 'Location permissions are denied.';
+            });
+          }
           return;
         }
       }
 
       if (permission == LocationPermission.deniedForever) {
-        setState(() {
-          location = 'Location permissions are permanently denied.';
-        });
+        if (mounted) {
+          setState(() {
+            location = 'Location permissions are permanently denied.';
+          });
+        }
         return;
       }
 
       Position currentPosition = await Geolocator.getCurrentPosition();
-      setState(() {
-        location =
-            'Lat: ${currentPosition.latitude}, Long: ${currentPosition.longitude}';
-      });
+      if (mounted) {
+        setState(() {
+          location = 'Lat: ${currentPosition.latitude}, Long: ${currentPosition.longitude}';
+        });
+      }
     } catch (e) {
-      setState(() {
-        location = 'Error fetching location.';
-      });
+      if (mounted) {
+        setState(() {
+          location = 'Error fetching location.';
+        });
+      }
     }
   }
 
@@ -85,12 +94,20 @@ class _HomePageState extends State<HomePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).push(
+                onPressed: () async {
+                  // Await the result from IPSettingsPage
+                  final updatedIP = await Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (context) => const IPSettingsPage(),
                     ),
                   );
+
+                  // If a new IP address was returned, refresh the state
+                  if (updatedIP != null && updatedIP is String && mounted) {
+                    setState(() {
+                      _storedIP = updatedIP;
+                    });
+                  }
                 },
                 child: const Text('Configure IP Address'),
               ),
@@ -101,9 +118,11 @@ class _HomePageState extends State<HomePage> {
               ],
               BarcodeScannerButton(
                 onScan: (String scannedValue) async {
-                  setState(() {
-                    barcode = scannedValue;
-                  });
+                  if (mounted) {
+                    setState(() {
+                      barcode = scannedValue;
+                    });
+                  }
 
                   // Fetch the new location after a successful scan
                   await _getCurrentLocation();
@@ -115,9 +134,11 @@ class _HomePageState extends State<HomePage> {
               LocationButton(
                 location: location,
                 onLocationUpdate: (String newLocation) {
-                  setState(() {
-                    location = newLocation;
-                  });
+                  if (mounted) {
+                    setState(() {
+                      location = newLocation;
+                    });
+                  }
                 },
               ),
             ],

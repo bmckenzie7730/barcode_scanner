@@ -10,7 +10,6 @@ class IPSettingsPage extends StatefulWidget {
 
 class _IPSettingsPageState extends State<IPSettingsPage> {
   final TextEditingController _ipController = TextEditingController();
-  String? _storedIP;
 
   @override
   void initState() {
@@ -22,40 +21,20 @@ class _IPSettingsPageState extends State<IPSettingsPage> {
     String? storedIP = await IPStorageService.getIPAddress();
     if (mounted) {
       setState(() {
-        _storedIP = storedIP;
+        _ipController.text = storedIP ?? '';
       });
     }
   }
 
-  Future<void> _saveIP() async {
-    String ip = _ipController.text.trim();
-    if (ip.isNotEmpty) {
-      await IPStorageService.saveIPAddress(ip);
-      if (mounted) {
-        setState(() {
-          _storedIP = ip;
-        });
-        _ipController.clear();
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('IP Address saved successfully!')),
-          );
-        }
-      }
-    }
-  }
+  Future<void> _saveIPAddress() async {
+    String newIP = _ipController.text.trim();
 
-  Future<void> _clearIP() async {
-    await IPStorageService.removeIPAddress();
+    // Save the new IP address using the service
+    await IPStorageService.saveIPAddress(newIP);
+
+    // Ensure that the widget is still mounted before using `Navigator.pop`
     if (mounted) {
-      setState(() {
-        _storedIP = null;
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('IP Address removed!')),
-        );
-      }
+      Navigator.pop(context, newIP);
     }
   }
 
@@ -63,32 +42,21 @@ class _IPSettingsPageState extends State<IPSettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('IP Settings'),
+        title: const Text('Configure IP Address'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (_storedIP != null) ...[
-              Text('Stored IP Address: $_storedIP'),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _clearIP,
-                child: const Text('Clear IP Address'),
-              ),
-              const SizedBox(height: 20),
-            ],
             TextField(
               controller: _ipController,
               decoration: const InputDecoration(
                 labelText: 'Enter IP Address',
-                border: OutlineInputBorder(),
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _saveIP,
+              onPressed: _saveIPAddress,
               child: const Text('Save IP Address'),
             ),
           ],
